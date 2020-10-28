@@ -1,5 +1,7 @@
 # Tool for Destiny 2 Zero Hour Vault Puzzle
 
+https://krump-lee.github.io/zerohourpuzzle/
+
 This can help solo players to get the exotic ship.
 
 changes:
