@@ -36,6 +36,8 @@ var locked = new Array(49);
 var filter = [-1,-1,-1,-1,-1,-1];
 var saved_filter = undefined;
 
+var lock_timer = undefined;
+
 var cur_conf = -1;
 var cur_lock = -1;
 var cur_progress = 0;
@@ -237,33 +239,35 @@ function _draw_clock(id)
 	t.className = "clock";
 
 	var r = t.insertRow(0);
-	r.insertCell(0).id = id + "h10";
+	var c = r.insertCell(0);
+	c.id = id + "h10";
+	c.style.height="24%";
 	r.insertCell(1).id = id + "h11";
 	r.insertCell(2).id = id + "h0";
 	r.insertCell(3).id = id + "h1";
 
 	r = t.insertRow(1);
-	var c = r.insertCell(0);
+	c = r.insertCell(0);
 	c.id = id + "h9";
-	c.style.height="25%";
+	c.style.height="24%";
 
-	var c = r.insertCell(1);
+	c = r.insertCell(1);
 	c.id = id + "s";
 	c.colSpan = 2;
 	c.rowSpan = 2;
-	//c.style.border = "0px solid royalBlue";
-	c.style.padding = "10px 2px";
 
 	r.insertCell(2).id = id + "h2";
 
 	r = t.insertRow(2);
-	var c = r.insertCell(0);
+	c = r.insertCell(0);
 	c.id = id + "h8";
-	c.style.height="25%";
+	c.style.height="24%";
 	r.insertCell(1).id = id + "h3";
 
 	r = t.insertRow(3);
-	r.insertCell(0).id = id + "h7";
+	c = r.insertCell(0);
+	c.id = id + "h7";
+	c.style.height="24%";
 	r.insertCell(1).id = id + "h6";
 	r.insertCell(2).id = id + "h5";
 	r.insertCell(3).id = id + "h4";
@@ -325,6 +329,12 @@ function init(config)
 
 function toggle_lock()
 {
+	if (lock_timer !== undefined)
+	{
+		clearTimeout(lock_timer);
+		lock_timer = undefined;
+	}
+
 	if (cur_lock < 0)
 		return;
 
@@ -332,7 +342,8 @@ function toggle_lock()
 	{
 		cur_progress -= 1;
 		locked[cur_lock] = false;
-		cur_lock = -1;
+		filter = saved_filter;
+		lock_timer = setTimeout(toggle_lock, 3000);
 	}
 	else
 	{
@@ -343,11 +354,18 @@ function toggle_lock()
 	}
 
 	var [states, options] = _get_states();
+	_draw_progress();
 	_draw_states(states, options);
 }
 
 function toggle_clock(n, m)
 {
+	if (lock_timer !== undefined)
+	{
+		clearTimeout(lock_timer);
+		lock_timer = undefined;
+	}
+
 	if (filter[n] == m)
 		filter[n] = -1;
 	else
@@ -356,21 +374,24 @@ function toggle_clock(n, m)
 	var [states, options] = _get_states();
 
 	if (options.length == 1)
-	{
+
 		cur_lock = options[0];
-		toggle_lock();
-	}
 	else
-	{
 		cur_lock = -1;
-		_draw_states(states, options);
-	}
+
+	_draw_progress();
+	_draw_states(states, options);
+
+	lock_timer = setTimeout(toggle_lock, 3000);
+}
+
+function _draw_progress()
+{
+	document.getElementById("progress").innerText = (49 - cur_progress).toString();
 }
 
 function _draw_states(states, options)
 {
-	document.getElementById("progress").innerText = (49 - cur_progress).toString();
-
 	var i;
 	var j;
 
@@ -417,6 +438,7 @@ function _draw_states(states, options)
 		{
 			var e = document.getElementById("c" + i + "s").firstChild;
 			e.style.borderWidth = "3px";
+			e.style.borderColor = locked[cur_lock] ? "dimGray" : "lightGray";
 			e.setAttribute("onclick", "toggle_lock()");
 
 			var row = configs[cur_conf][cur_lock];
@@ -443,7 +465,8 @@ function _draw_states(states, options)
 			}
 		}
 
-		cnt = 0;
+		var cnt = 0;
+		var last = cur_progress == 48;
 
 		for (j = 0; j < 12; j++)
 			if (states[i][j])
@@ -451,9 +474,9 @@ function _draw_states(states, options)
 
 		for (j = 0; j < 12; j++)
 		{
-			e = document.getElementById("c" + i + "h" + j);
+			var e = document.getElementById("c" + i + "h" + j);
 			var f = filter[i] == j;
-			e.style.backgroundColor = f ? "royalBlue" : states[i][j] ? (cnt > 1) ? (states[i][j] == 1) ? "lightGreen" : "skyBlue" : "darkGray" : "gainsboro";
+			e.style.backgroundColor = f ? "royalBlue" : states[i][j] ? (cnt > 1 || last) ? (states[i][j] == 1) ? "lightGreen" : "skyBlue" : "darkGray" : "gainsboro";
 			e.setAttribute("onclick", states[i][j] ? "toggle_clock(" + i + "," + j + ");" : "");
 		}
 	}
