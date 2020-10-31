@@ -11,7 +11,7 @@ table.clock td, table {border-radius:5px;}
 table.room {border-spacing:3px;}
 table.clock table.room {border:0px solid gray;}
 table.room td {border-radius:3px;}
-tr#conf > td {border:3px solid gray; border-radius:6px;}
+tr#conf > td {border:3px solid gray; border-radius:6px; cursor:pointer;}
 td {padding:0;}
 
 td#conf0 {background-color:lightSkyBlue;}
@@ -226,9 +226,11 @@ function set_config(config)
 	for (i = 0; i < 6; i++)
 		filter[i] = -1;
 
-	document.getElementById("conf0").style.borderColor = (config == 0) ? "royalBlue" : "lightGray";
-	document.getElementById("conf1").style.borderColor = (config == 1) ? "royalBlue" : "lightGray";
-	document.getElementById("conf2").style.borderColor = (config == 2) ? "royalBlue" : "lightGray";
+	for (i = 0; i < 3; i++)
+	{
+		var e = document.getElementById("conf" + i);
+		e.style.borderColor = (config == i) ? "royalBlue" : "lightGray";
+	}
 
 	toggle_clock(0, -1);
 }
@@ -440,6 +442,7 @@ function _draw_states(states, options)
 			e.style.borderWidth = "3px";
 			e.style.borderColor = locked[cur_lock] ? "dimGray" : "lightGray";
 			e.setAttribute("onclick", "toggle_lock()");
+			e.style.cursor = "pointer";
 
 			var row = configs[cur_conf][cur_lock];
 			var color = colors[row[6].color];
@@ -456,6 +459,7 @@ function _draw_states(states, options)
 			var e = document.getElementById("c" + i + "s").firstChild;
 			e.style.borderWidth = "0";
 			e.setAttribute("onclick", "");
+			e.style.cursor = "default";
 
 			for (j = 0; j < 7; j++)
 			{
@@ -478,6 +482,7 @@ function _draw_states(states, options)
 			var f = filter[i] == j;
 			e.style.backgroundColor = f ? "royalBlue" : states[i][j] ? (cnt > 1 || last) ? (states[i][j] == 1) ? "lightGreen" : "skyBlue" : "darkGray" : "gainsboro";
 			e.setAttribute("onclick", states[i][j] ? "toggle_clock(" + i + "," + j + ");" : "");
+			e.style.cursor = states[i][j] ? "pointer" : "default";
 		}
 	}
 }
